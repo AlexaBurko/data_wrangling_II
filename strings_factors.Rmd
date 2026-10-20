@@ -8,6 +8,7 @@ output: github_document
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(rvest)
+library(p8105.datasets)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -117,9 +118,54 @@ vec_sex = fct_relevel(vec_sex, "male")
 
 
 
-Import NSDUH
+## Import NSDUH
 ```{r}
 url = "https://www.samhsa.gov/data/sites/default/files/NSDUHsaeShortTermCHG2015/NSDUHsaeShortTermCHG2015.htm"
 
 drug_use_html = read_html(url)
 ```
+
+Pull the tables out
+```{r}
+marj_df =
+  drug_use_html |> 
+  html_table() |> 
+  first() |> 
+  slice(-1) |> 
+  select(-contains("P Value")) |> 
+  pivot_longer(
+    -State,    # this applies the pivot longer to every variable except "State"
+    names_to = "age_year",
+    values_to = "prev"
+  ) |> 
+  separate(age_year, into = c("age", "year"), sep = "\\(") |>  # separate values by where the parenthesis is 
+mutate(
+  year = str_replace(year, "\\)", ""), #replace any parenthesis in the values with nothing
+prev = str_replace(prev, "[a-c]", ""), #replace any letters in the values with nothing
+  prev = as.numeric(prev)
+)
+```
+
+Make a quick plot
+```{r}
+marj_df |> 
+  filter(age == "12-17") |> 
+  mutate(State = fct_reorder(State, prev)) |> # puts state in order of ascneding prevalence instead of alphabetical order
+  ggplot(aes(x = State, y = prev, color = year))+
+  geom_point()+
+  theme(axis.text.x = element_text(angle=90, hjust = 1))
+```
+
+## NYC Airbnb
+```{r}
+data(nyc_airbnb)
+
+nyc_airbnb |> 
+  filter(neighbourhood_group == "Manhattan") |> 
+  filter(price < 1000) |> 
+  mutate(neighbourhood = fct_reorder(neighbourhood, price)) |> 
+  ggplot(aes(x = neighbourhood, y = price))+
+  geom_boxplot()+
+  coord_flip() # flips x and y axis
+```
+
