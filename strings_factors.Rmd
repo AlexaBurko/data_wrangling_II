@@ -1,0 +1,125 @@
+---
+title: "strings and factors"
+author: "Alexa Burko"
+date: "2026-10-20"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(rvest)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+## strings and regex
+```{r}
+string_vec = c("my", "name", "is", "alexa")
+
+str_detect(string_vec, "alexa")
+str_detect(string_vec, "my")
+str_detect(string_vec, "My")
+
+
+str_replace(string_vec, "my", "My")
+# replace "my" in the string with "My"
+```
+```{r}
+string_vec = c(
+  "i think we all rule for participating",
+  "i think i have been caught",
+  "i think this will be quite fun actually",
+  "it will be fun, i think"
+  )
+
+str_detect(string_vec, "i think")
+#"i think" anywhere in string 
+
+str_detect(string_vec, "^i think")
+# "i think" at the beginning
+
+str_detect(string_vec, "^i think$")
+# "i think" at the end
+```
+
+```{r}
+string_vec = c(
+  "Time for a Pumpkin Spice Latte!",
+  "went to the #pumpkinpatch last weekend",
+  "Pumpkin Pie is obviously the best pie",
+  "SMASHING PUMPKINS -- LIVE IN CONCERT!!"
+  )
+
+str_detect(string_vec, "[Pp]umpkin")
+# brackets mean that that letter can either be capital or lowercase
+
+```
+
+```{r}
+string_vec = c(
+  '7th inning stretch',
+  '1st half soon to begin. Texas won the toss.',
+  'she is 5 feet 4 inches tall',
+  '3AM - cant sleep :('
+  )
+
+str_detect(string_vec, "^[0-9][a-zA-Z]")
+# brackets define ranges
+# detects any number 0-9 followed immediately by any letter capital or lowercase
+```
+
+```{r}
+string_vec = c(
+  'Its 7:11 in the evening',
+  'want to go to 7-11?',
+  'my flight is AA711',
+  'NetBios: scanning ip 203.167.114.66'
+  )
+
+str_detect(string_vec, "7.11")
+# detects the numbers 7 and 11 with any character (.) in between 
+```
+
+```{r}
+string_vec = c(
+  'The CI is [2, 5]',
+  ':-]',
+  ':-[',
+  'I found the answer on pages [6-7]'
+  )
+
+str_detect(string_vec, "\\[")
+# the slash slash tells it to look for the subsequent character 
+```
+
+## quick note on factors
+```{r}
+vec_sex = factor(c("male", "male", "female", "female"))
+
+as.numeric(vec_sex)
+
+vec_sex = fct_relevel(vec_sex, "male")
+```
+
+
+
+Import NSDUH
+```{r}
+url = "https://www.samhsa.gov/data/sites/default/files/NSDUHsaeShortTermCHG2015/NSDUHsaeShortTermCHG2015.htm"
+
+drug_use_html = read_html(url)
+```
