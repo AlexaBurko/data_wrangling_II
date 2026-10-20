@@ -169,3 +169,102 @@ nyc_airbnb |>
   coord_flip() # flips x and y axis
 ```
 
+## Restaurant inspections
+
+```{r}
+data("rest_inspec")
+
+rest_inspec = 
+  rest_inspec |> 
+  rename(borough = boro)
+```
+
+Quick EDA
+```{r}
+rest_inspec |> 
+  count(borough, grade) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+  
+```
+
+```{r}
+rest_inspec =
+  rest_inspec |> 
+  filter(
+    borough != "0",
+    grade %in% c("A", "B", "C")
+  )
+
+rest_inspec |> 
+  count(borough, grade) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+```
+
+Look for pizza places
+```{r}
+rest_inspec |> 
+  filter(str_detect(dba, "Pizza")) |> #dba is the column with names of the restaurants
+  count(borough, grade) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+
+rest_inspec |> 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) |> #allows for upper or lower case 
+  count(borough, grade) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+```
+
+
+This is better
+```{r}
+rest_inspec |> 
+  mutate(dba = str_to_upper(dba)) |> # makes all values of dba fully uppercase
+  filter(str_detect(dba, "PIZZA")) |> 
+  count(borough, grade) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+
+```
+
+```{r}
+rest_inspec |> 
+  mutate(dba = str_to_upper(dba)) |> 
+  filter(str_detect(dba, "PIZZA")) |> 
+  ggplot(aes(x = borough, fill = grade))+
+  geom_bar()
+```
+This doesnt work
+```{r}
+rest_inspec |> 
+  mutate(
+    dba = str_to_upper(dba),
+    borough = fct_infreq(borough),
+    borough = str_replace(borough, "Manhattan", "The City")) |> 
+  filter(str_detect(dba, "PIZZA")) |> 
+  ggplot(aes(x = borough, fill = grade))+
+  geom_bar()
+```
+This does work
+```{r}
+rest_inspec |> 
+  mutate(
+    dba = str_to_upper(dba),
+    borough = fct_infreq(borough),
+    borough = fct_recode(borough, "The City" = "Manhattan")) |> 
+  filter(str_detect(dba, "PIZZA")) |> 
+  ggplot(aes(x = borough, fill = grade))+
+  geom_bar()
+```
